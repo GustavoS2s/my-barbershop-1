@@ -1,3 +1,4 @@
+import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -14,12 +15,15 @@ import { Component, computed, inject, Input, OnDestroy, OnInit, signal } from '@
 import { ActivatedRoute } from '@angular/router';
 import { StorefrontApi } from '@shared/apis/storefront.api';
 import { iStorefront } from '@shared/interfaces/storefront.interface';
+import { DownloadStoragePipe } from '@widget/pipes/download-storage/download-storage.pipe';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
   selector: 'mb-storefront',
   imports: [
     CommonModule,
+    DownloadStoragePipe,
+    NzAvatarModule,
     NzBadgeModule,
     NzButtonModule,
     NzCardModule,

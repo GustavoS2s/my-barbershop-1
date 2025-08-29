@@ -10,6 +10,7 @@ export const STOREFRONT_FORM_CONFIG = (storefront?: iStorefront): iDynamicFormCo
       type: {
         field: eDynamicField.AVATAR,
       },
+      initialValue: storefront?.photo || '',
       size: 24,
     },
     {

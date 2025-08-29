@@ -1,5 +1,9 @@
 <nz-flex nzVertical nzJustify="center" nzAlign="center">
   <div class="text-center">
+    @if (storefrontData()?.photo) {
+    <nz-avatar nzIcon="user" [nzSrc]="(storefrontData()?.photo | downloadStorage | async)!" [nzSize]="100" nzShape="circle"> </nz-avatar>
+    }
+
     <h1>{{ storefrontData()?.name || 'Carregando...' }}</h1>
     @if (storefrontData()?.is_open) {
     <nz-tag nzColor="success">

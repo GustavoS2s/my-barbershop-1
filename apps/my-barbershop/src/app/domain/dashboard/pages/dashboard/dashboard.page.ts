@@ -16,7 +16,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ShareModalComponent } from '@domain/dashboard/components/share-modal/share-modal.component';
 import { STOREFRONT_FORM_CONFIG } from '@domain/dashboard/constants/storefront-form.constant';
+import { StorageApi } from '@shared/apis/storage.api';
 import { StorefrontApi } from '@shared/apis/storefront.api';
+import { eBucketName } from '@shared/enums/bucket-name.enum';
 import { iStorefront } from '@shared/interfaces/storefront.interface';
 import { CompanyService } from '@shared/services/company/company.service';
 import { iDynamicFormConfig } from '@widget/components/dynamic-form/dynamic-form-config.interface';
@@ -48,6 +50,7 @@ enum eDashboardSegmentedOptions {
   styleUrl: './dashboard.page.scss',
 })
 export class DashboardPage implements OnInit {
+  private storageApi = inject(StorageApi);
   private storefrontApi = inject(StorefrontApi);
   private companyService = inject(CompanyService);
   private notificationService = inject(NzNotificationService);
@@ -78,8 +81,9 @@ export class DashboardPage implements OnInit {
     const storefront = await this.storefrontApi.getByCompanyId();
     this.storefrontData.set(storefront);
 
+    this.configForm = STOREFRONT_FORM_CONFIG(storefront || undefined);
+
     if (storefront) {
-      this.configForm = STOREFRONT_FORM_CONFIG(storefront);
       this.isOpen.set(storefront.is_open || false);
       this.updateDeadline();
     }
@@ -159,10 +163,13 @@ export class DashboardPage implements OnInit {
     const formValues = this.dynamicForm()?.form.value;
     const storefront = this.storefrontData();
 
+    const photo = formValues.photo !== storefront?.photo ? await this.storageApi.insert(eBucketName.AVATARS, formValues.photo, storefront?.photo) : storefront?.photo;
+
     const { error } = await this.storefrontApi.insertOrUpdate({
       company_id: this.companyService.company()?.id,
       ...storefront,
       ...formValues,
+      photo: photo || '',
       is_open: this.isOpen(),
     });
     if (error) {
