@@ -4,15 +4,17 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzFlexModule } from 'ng-zorro-antd/flex';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzSegmentedModule } from 'ng-zorro-antd/segmented';
-import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 
-import { Component, computed, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { ShareModalComponent } from '@domain/dashboard/components/share-modal/share-modal.component';
 import { STOREFRONT_FORM_CONFIG } from '@domain/dashboard/constants/storefront-form.constant';
 import { StorefrontApi } from '@shared/apis/storefront.api';
 import { iStorefront } from '@shared/interfaces/storefront.interface';
@@ -45,10 +47,11 @@ enum eDashboardSegmentedOptions {
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
 })
-export class DashboardPage implements OnInit, OnDestroy {
+export class DashboardPage implements OnInit {
   private storefrontApi = inject(StorefrontApi);
   private companyService = inject(CompanyService);
   private notificationService = inject(NzNotificationService);
+  private modalService = inject(NzModalService);
 
   selectedOption: eDashboardSegmentedOptions = eDashboardSegmentedOptions.TimeAndStatus;
   segmentedOptions = [eDashboardSegmentedOptions.TimeAndStatus, eDashboardSegmentedOptions.Settings];
@@ -60,7 +63,6 @@ export class DashboardPage implements OnInit, OnDestroy {
   configForm: iDynamicFormConfig[] = [];
   dynamicForm = viewChild(DynamicFormComponent);
   deadline = signal<number>(Date.now());
-  private timeUpdateInterval: ReturnType<typeof setInterval> | null = null;
 
   hasWaitingTime = computed(() => {
     const storefront = this.storefrontData();
@@ -69,16 +71,7 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadData();
-    // Update countdown every second
-    this.timeUpdateInterval = setInterval(() => {
-      this.updateDeadline();
-    }, 1000);
-  }
-
-  ngOnDestroy(): void {
-    if (this.timeUpdateInterval) {
-      clearInterval(this.timeUpdateInterval);
-    }
+    this.updateDeadline();
   }
 
   async loadData() {
@@ -96,7 +89,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     const storefront = this.storefrontData();
     if (storefront?.estimated_finish_time) {
       const finishTime = new Date(storefront.estimated_finish_time).getTime();
-      this.deadline.set(finishTime > Date.now() ? finishTime : Date.now());
+      this.deadline.set(finishTime);
     } else {
       this.deadline.set(Date.now());
     }
@@ -110,18 +103,23 @@ export class DashboardPage implements OnInit, OnDestroy {
     const storefront = this.storefrontData();
     if (!storefront) return;
 
-    // Add or subtract minutes from current estimated finish time
-    // If no current time, start from now
-    const baseTime = storefront.estimated_finish_time ? new Date(storefront.estimated_finish_time) : new Date();
+    const now = new Date();
+    let newEstimatedFinishTime: string | null = null;
 
-    // For queue management: always adjust based on current state
-    const newTime = new Date(baseTime.getTime() + minutesToAdd * 60000);
+    if (!storefront.estimated_finish_time && minutesToAdd > 0) {
+      const newFinishTime = new Date(now.getTime() + minutesToAdd * 60000);
+      newEstimatedFinishTime = newFinishTime.toISOString();
+    } else if (storefront.estimated_finish_time) {
+      const currentFinishTime = new Date(storefront.estimated_finish_time);
+      const newFinishTime = new Date(currentFinishTime.getTime() + minutesToAdd * 60000);
 
-    // If the new time is in the past, set to null (no queue)
-    const newFinishTime = newTime > new Date() ? newTime : null;
+      newEstimatedFinishTime = newFinishTime > now ? newFinishTime.toISOString() : null;
+    }
 
-    storefront.estimated_finish_time = newFinishTime ? newFinishTime.toISOString() : null;
-    this.storefrontData.set(storefront);
+    this.storefrontData.set({
+      ...storefront,
+      estimated_finish_time: newEstimatedFinishTime,
+    });
     this.updateDeadline();
     this.autoSaveTimeAndStatus();
   }
@@ -173,5 +171,20 @@ export class DashboardPage implements OnInit, OnDestroy {
     }
 
     this.notificationService.success('Sucesso', 'Configurações salvas com sucesso!');
+  }
+
+  async showShareModal() {
+    const storefront = this.storefrontData();
+    if (!storefront?.id) {
+      this.notificationService.error('Erro', 'ID da loja não encontrado.');
+      return;
+    }
+
+    this.modalService.create({
+      nzTitle: 'Compartilhar Página da Barbearia',
+      nzContent: ShareModalComponent,
+      nzData: { storefrontId: storefront.id },
+      nzFooter: null,
+    });
   }
 }

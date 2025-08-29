@@ -15,7 +15,8 @@ export class StorefrontApi extends BaseApi<iStorefront> {
   }
 
   async getByCompanyId() {
-    const { data } = await this.select('*').match({ company_id: this.companyService.company()?.id }).limit(1).maybeSingle();
+    const company_id = this.companyService.company()?.id;
+    const { data } = await this.select('*').match({ company_id }).limit(1).maybeSingle();
     return data as iStorefront | null;
   }
 

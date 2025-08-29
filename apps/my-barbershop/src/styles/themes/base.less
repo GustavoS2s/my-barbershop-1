@@ -1,2 +1,20 @@
 @primary-color: #3AB07B;
+@border-radius-base: 0.25rem;
 
+
+.ant-dropdown {
+  &-menu {
+    &-item {
+      margin: 0.5rem;
+      border-radius: @border-radius-base;
+
+      i + span {
+        margin-left: 0.5rem;
+      }
+    }
+  }
+
+  nz-divider {
+    margin: 1rem 0;
+  }
+}

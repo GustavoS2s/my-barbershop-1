@@ -7,6 +7,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { Component, inject, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '@domain/auth/services/auth.service';
 import { injectSupabase } from '@shared/functions/inject-supabase.function';
 import { eDynamicField } from '@widget/components/dynamic-form/dynamic-field.enum';
 import { iDynamicFormConfig } from '@widget/components/dynamic-form/dynamic-form-config.interface';
@@ -22,6 +23,7 @@ export class LoginPage {
   private supabase = injectSupabase();
   private notificationService = inject(NzNotificationService);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   loginConfig: iDynamicFormConfig[] = [
     {
@@ -63,6 +65,7 @@ export class LoginPage {
       return;
     }
 
-    this.router.navigate(['/']);
+    await this.authService.load();
+    this.router.navigate(['/dashboard']);
   }
 }

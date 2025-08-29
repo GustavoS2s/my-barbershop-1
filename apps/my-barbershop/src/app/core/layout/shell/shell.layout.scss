@@ -1,7 +1,62 @@
-.container {
-  height: 100vh;
-  width: 100%;
-  padding: 2rem;
-  max-width: 56rem;
+nz-layout {
+  min-height: 100vh;
+}
+
+nz-header {
+  background: white;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 64px;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  i {
+    font-size: 24px;
+    color: #1890ff;
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+nz-content {
+  background: white;
+  padding: 24px 0;
+
+  &.no-header {
+    padding: 0;
+  }
+}
+
+.container {
+  padding: 0 24px;
+  margin: 0 auto;
+  max-width: 1200px;
 }

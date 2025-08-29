@@ -5,10 +5,16 @@
       <span nz-typography nzType="secondary">Gerencie a página pública da sua barbearia.</span>
     </div>
 
-    <button nz-button [routerLink]="['/view']">
-      <i nz-icon nzType="eye"></i>
-      Ver página pública
-    </button>
+    <nz-flex nzGap="small">
+      <button nz-button (click)="showShareModal()" [disabled]="!storefrontData()">
+        <i nz-icon nzType="share-alt"></i>
+        Compartilhar
+      </button>
+      <button nz-button [routerLink]="storefrontData()?.id ? ['/view', storefrontData()?.id] : ['/view']">
+        <i nz-icon nzType="eye"></i>
+        Ver página pública
+      </button>
+    </nz-flex>
   </nz-flex>
 
   <nz-segmented nzBlock [nzOptions]="segmentedOptions" (nzValueChange)="handleValueChange($event)"></nz-segmented>

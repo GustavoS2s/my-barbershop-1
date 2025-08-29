@@ -11,6 +11,7 @@ import { NzTypographyModule } from 'ng-zorro-antd/typography';
 
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, Input, OnDestroy, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { StorefrontApi } from '@shared/apis/storefront.api';
 import { iStorefront } from '@shared/interfaces/storefront.interface';
 import { RealtimeChannel } from '@supabase/supabase-js';
@@ -34,11 +35,12 @@ import { RealtimeChannel } from '@supabase/supabase-js';
   styleUrl: './storefront.page.scss',
 })
 export class StorefrontPage implements OnInit, OnDestroy {
-  @Input() id = '';
-
   private storefrontApi = inject(StorefrontApi);
+  private route = inject(ActivatedRoute);
   private realtimeChannel: RealtimeChannel | null = null;
   private timeUpdateInterval: ReturnType<typeof setInterval> | null = null;
+
+  @Input() id = '';
 
   storefrontData = signal<iStorefront | null>(null);
   deadline = signal<number>(Date.now());
@@ -46,10 +48,7 @@ export class StorefrontPage implements OnInit, OnDestroy {
 
   hasWaitingTime = computed(() => {
     const storefront = this.storefrontData();
-    if (!storefront?.is_open || !storefront?.estimated_finish_time) {
-      return false;
-    }
-    return this.deadline() > this.currentTime();
+    return !!(storefront?.is_open && storefront?.estimated_finish_time && this.deadline() > Date.now());
   });
 
   ngOnInit(): void {
@@ -70,7 +69,18 @@ export class StorefrontPage implements OnInit, OnDestroy {
   }
 
   async initializeStorefront() {
-    const data = await this.storefrontApi.getByCompanyId();
+    const routeId = this.route.snapshot.paramMap.get('id');
+    const storefrontId = this.id || routeId;
+
+    let data: iStorefront | null = null;
+
+    if (storefrontId) {
+      const { data: storefrontData } = await this.storefrontApi.getById(storefrontId);
+      data = storefrontData;
+    } else {
+      data = await this.storefrontApi.getByCompanyId();
+    }
+
     if (data) {
       this.updateStorefrontData(data);
 

@@ -1,3 +1,35 @@
-<div class="container">
-  <router-outlet></router-outlet>
-</div>
+<nz-layout>
+  @if (showHeader()) {
+  <nz-header>
+    <div class="header-container">
+      <div class="logo" [routerLink]="['/dashboard']">
+        <i nz-icon nzType="scissor" nzTheme="outline"></i>
+        <span>{{ companyService.company()?.name || 'My Barbershop' }}</span>
+      </div>
+      <div class="header-actions">
+        <a nz-dropdown [nzDropdownMenu]="userMenu" nzTrigger="click" nzPlacement="bottomRight">
+          <nz-avatar nzIcon="user" nzSize="small" style="cursor: pointer"></nz-avatar>
+        </a>
+        <nz-dropdown-menu #userMenu="nzDropdownMenu">
+          <ul nz-menu nzSelectable="false">
+            <li nz-menu-item>
+              <i nz-icon nzType="user"></i>
+              <span>Editar perfil</span>
+            </li>
+
+            <li nz-menu-item tabindex="0" (click)="handleSignOut()" (keydown.enter)="handleSignOut()">
+              <i nz-icon nzType="logout"></i>
+              <span>Sair</span>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+    </div>
+  </nz-header>
+  }
+  <nz-content [class.no-header]="!showHeader()">
+    <div class="container">
+      <router-outlet></router-outlet>
+    </div>
+  </nz-content>
+</nz-layout>
