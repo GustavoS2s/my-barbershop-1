@@ -120,5 +120,8 @@
     "supabase",
     "SUPABASE"
   ],
-  "deno.enable": true
+  "deno.enable": true,
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
