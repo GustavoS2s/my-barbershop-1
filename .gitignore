@@ -45,3 +45,5 @@ Thumbs.db
 .env
 
 apps/my-barbershop/src/environments/*.ts
+
+.firebase
